@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor IoT - ESP32</title>
+    <title>Monitor IoT - Rodolfo Acosta</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 font-sans">
@@ -11,7 +11,7 @@
     <div class="max-w-4xl mx-auto py-10 px-4">
         <header class="text-center mb-10">
             <h1 class="text-3xl font-bold text-gray-800">Estación Meteorológica Remota</h1>
-            <p class="text-gray-600">Datos en tiempo real desde el ESP32</p>
+            <p class="text-gray-600">Datos en tiempo real desde ESP32 (Proyecto AI9010)</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -28,49 +28,57 @@
         <div class="bg-white p-6 rounded-xl shadow-md">
             <h3 class="text-lg font-semibold mb-4 text-gray-700">Historial y Exportación</h3>
             <div class="flex flex-wrap gap-4 items-center justify-between">
-                <p class="text-sm text-gray-500 italic">Última actualización: <span id="last-update">Nunca</span></p>
+                <p class="text-sm text-gray-500 italic">Estado: <span id="status" class="text-orange-500 font-bold">Conectando...</span></p>
                 <button onclick="downloadCSV()" class="bg-gray-800 hover:bg-black text-white px-6 py-2 rounded-lg transition duration-300">
                     Descargar Datos (CSV)
                 </button>
             </div>
+            <p class="text-xs text-gray-400 mt-4">Última actualización: <span id="last-update">-</span></p>
         </div>
     </div>
 
     <script type="module">
-        // IMPORTANTE: Aquí debes pegar las credenciales de tu consola Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        // TUS CREDENCIALES INTEGRADAS
         const firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "TU_PROYECTO.firebaseapp.com",
-            databaseURL: "https://TU_PROYECTO.firebaseio.com",
-            projectId: "TU_PROYECTO",
-            storageBucket: "TU_PROYECTO.appspot.com",
-            messagingSenderId: "ID_SENDER",
-            appId: "ID_APP"
+            apiKey: "AIzaSyCQHbxg0INadh2gnVhfFSrVTMgLVxoy8iA",
+            authDomain: "ai9010p1.firebaseapp.com",
+            databaseURL: "https://ai9010p1-default-rtdb.firebaseio.com",
+            projectId: "ai9010p1",
+            storageBucket: "ai9010p1.firebasestorage.app",
+            messagingSenderId: "56952923768",
+            appId: "1:56952923768:web:7b0ebb7b02d558c5a52f8d"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         let historialDatos = [];
 
-        // Escuchar cambios en la base de datos (nodo 'lecturas')
         const dbRef = ref(db, 'lecturas');
+        
+        // Escuchar datos en tiempo real
         onValue(dbRef, (snapshot) => {
             const data = snapshot.val();
+            const statusEl = document.getElementById('status');
+            
             if (data) {
-                // Convertimos el objeto de Firebase en un Array para manejarlo fácil
-                historialDatos = Object.keys(data).map(key => data[key]);
+                statusEl.innerText = "En Línea";
+                statusEl.className = "text-green-500 font-bold";
                 
-                // Obtener el último registro
+                historialDatos = Object.keys(data).map(key => data[key]);
                 const ultima = historialDatos[historialDatos.length - 1];
                 
-                // Actualizar UI
-                document.getElementById('temp-val').innerText = `${ultima.t}°C`;
-                document.getElementById('hum-val').innerText = `${ultima.h}%`;
-                document.getElementById('last-update').innerText = new Date().toLocaleTimeString();
+                document.getElementById('temp-val').innerText = `${ultima.t.toFixed(1)}°C`;
+                document.getElementById('hum-val').innerText = `${ultima.h.toFixed(1)}%`;
+                document.getElementById('last-update').innerText = new Date(ultima.time).toLocaleString();
+            } else {
+                statusEl.innerText = "Esperando datos del ESP32...";
             }
+        }, (error) => {
+            console.error(error);
+            document.getElementById('status').innerText = "Error de conexión";
         });
 
         // Función para descargar CSV
@@ -79,16 +87,17 @@
             
             let csvContent = "data:text/csv;charset=utf-8,Fecha,Temperatura,Humedad\n";
             historialDatos.forEach(row => {
-                const fecha = new Date(row.time).toLocaleString();
+                const fecha = new Date(row.time).toLocaleString().replace(/,/g, "");
                 csvContent += `${fecha},${row.t},${row.h}\n`;
             });
 
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "datos_esp32.csv");
+            link.setAttribute("download", "reporte_clima_ai9010.csv");
             document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
