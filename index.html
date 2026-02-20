@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor IoT - ESP32</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="max-w-4xl mx-auto py-10 px-4">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-gray-800">Estación Meteorológica Remota</h1>
+            <p class="text-gray-600">Datos en tiempo real desde el ESP32</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 text-center">
+                <h2 class="text-sm uppercase text-gray-500 font-bold">Temperatura</h2>
+                <p id="temp-val" class="text-5xl font-mono mt-2 text-blue-600">--°C</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500 text-center">
+                <h2 class="text-sm uppercase text-gray-500 font-bold">Humedad</h2>
+                <p id="hum-val" class="text-5xl font-mono mt-2 text-green-600">--%</p>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-md">
+            <h3 class="text-lg font-semibold mb-4 text-gray-700">Historial y Exportación</h3>
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <p class="text-sm text-gray-500 italic">Última actualización: <span id="last-update">Nunca</span></p>
+                <button onclick="downloadCSV()" class="bg-gray-800 hover:bg-black text-white px-6 py-2 rounded-lg transition duration-300">
+                    Descargar Datos (CSV)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // IMPORTANTE: Aquí debes pegar las credenciales de tu consola Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            databaseURL: "https://TU_PROYECTO.firebaseio.com",
+            projectId: "TU_PROYECTO",
+            storageBucket: "TU_PROYECTO.appspot.com",
+            messagingSenderId: "ID_SENDER",
+            appId: "ID_APP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        let historialDatos = [];
+
+        // Escuchar cambios en la base de datos (nodo 'lecturas')
+        const dbRef = ref(db, 'lecturas');
+        onValue(dbRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                // Convertimos el objeto de Firebase en un Array para manejarlo fácil
+                historialDatos = Object.keys(data).map(key => data[key]);
+                
+                // Obtener el último registro
+                const ultima = historialDatos[historialDatos.length - 1];
+                
+                // Actualizar UI
+                document.getElementById('temp-val').innerText = `${ultima.t}°C`;
+                document.getElementById('hum-val').innerText = `${ultima.h}%`;
+                document.getElementById('last-update').innerText = new Date().toLocaleTimeString();
+            }
+        });
+
+        // Función para descargar CSV
+        window.downloadCSV = function() {
+            if (historialDatos.length === 0) return alert("No hay datos para descargar");
+            
+            let csvContent = "data:text/csv;charset=utf-8,Fecha,Temperatura,Humedad\n";
+            historialDatos.forEach(row => {
+                const fecha = new Date(row.time).toLocaleString();
+                csvContent += `${fecha},${row.t},${row.h}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "datos_esp32.csv");
+            document.body.appendChild(link);
+            link.click();
+        }
+    </script>
+</body>
+</html>
