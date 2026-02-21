@@ -92,8 +92,11 @@
                 const v = historialDatos[historialDatos.length - 1]; // Valores actuales
                 
                 // Actualizar Interfaz
-                document.getElementById('t').innerText = v.t + "°C";
-                document.getElementById('h').innerText = v.h + "%";
+
+                // Actualizar Interfaz con formato forzado
+                document.getElementById('t').innerText = v.t.toFixed(1) + "°C"; // 1 decimal siempre
+                document.getElementById('h').innerText = Math.round(v.h) + "%"; // Sin decimales
+
                 document.getElementById('co2').innerText = v.co2 + " ppm";
                 document.getElementById('nivN').innerText = v.nivN + "%";
                 document.getElementById('tNut').innerText = v.tNut + "°C";
@@ -103,7 +106,6 @@
                 document.getElementById('intL').innerText = v.intL + "%";
                 document.getElementById('gps-coords').innerText = `Lat: ${v.lat} | Lon: ${v.lon}`;
                 document.getElementById('map-link').href = `https://www.google.com/maps?q=${v.lat},${v.lon}`;
-                
                 document.getElementById('status-badge').innerText = "EN LÍNEA";
                 document.getElementById('status-badge').className = "px-4 py-1 rounded-full bg-green-900 text-green-200 text-xs font-bold";
                 document.getElementById('last-update').innerText = new Date(v.time).toLocaleString();
