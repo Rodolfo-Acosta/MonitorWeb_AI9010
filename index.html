@@ -11,18 +11,27 @@
     <div class="max-w-4xl mx-auto py-10 px-4">
         <header class="text-center mb-10">
             <h1 class="text-3xl font-bold text-gray-800">Estación Remota Cumana-Sucre</h1>
-            <p class="text-gray-600">Datos Proyecto: R3Acosta-AI9010</p>
+            <p class="text-gray-600">Datos Proyecto: R3Acosta-Agricultura Inteligente 9010</p>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 text-center">
-                <h2 class="text-sm uppercase text-gray-500 font-bold">Temperatura</h2>
+                <h2 class="text-sm uppercase text-gray-500 font-bold">Temperatura Ambiente</h2>
                 <p id="temp-val" class="text-5xl font-mono mt-2 text-blue-600">--°C</p>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500 text-center">
-                <h2 class="text-sm uppercase text-gray-500 font-bold">Humedad</h2>
+                <h2 class="text-sm uppercase text-gray-500 font-bold">Humedad Ambiente</h2>
                 <p id="hum-val" class="text-5xl font-mono mt-2 text-green-600">--%</p>
             </div>
+            <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 text-center">
+                <h2 class="text-sm uppercase text-gray-500 font-bold">Temperatura Nutriente</h2>
+                <p id="tempNutri-val" class="text-5xl font-mono mt-2 text-blue-600">--°C</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-md border-l-4 border-blue-500 text-center">
+                <h2 class="text-sm uppercase text-gray-500 font-bold">Dioxido de Carbono CO2</h2>
+                <p id="CO2-val" class="text-5xl font-mono mt-2 text-blue-600">--ppm</p>
+            </div>
+
         </div>
 
         <div class="bg-white p-6 rounded-xl shadow-md">
@@ -72,6 +81,9 @@
                 
                 document.getElementById('temp-val').innerText = `${ultima.t.toFixed(1)}°C`;
                 document.getElementById('hum-val').innerText = `${ultima.h.toFixed(1)}%`;
+                document.getElementById('tempNutri-val').innerText = `19%`;
+                document.getElementById('CO2-val').innerText = `523ppm`;
+
                 document.getElementById('last-update').innerText = new Date(ultima.time).toLocaleString();
             } else {
                 statusEl.innerText = "Esperando datos del ESP32...";
